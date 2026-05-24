@@ -1,151 +1,675 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
     <title>NEON SNAKE</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="theme-color" content="#00ff00">
 
     <style>
-        body {
-            background: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            touch-action: none;
+
+        body{
+            background:#111;
+            color:#fff;
+
+            font-family:Arial,sans-serif;
+
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+
+            height:100vh;
+
+            margin:0;
+
+            overflow:hidden;
+
+            touch-action:none;
         }
 
-        .bar {
-            background: #333;
-            width: 400px;
-            padding: 10px;
-            text-align: center;
-            font-size: 18px;
-            border: 2px solid #0f0;
+        #gameContainer{
+
+            display:none;
+
+            flex-direction:column;
+
+            align-items:center;
         }
 
-        canvas {
-            background: #000;
-            border: 4px solid #0f0;
-            box-shadow: 0 0 20px #0f0;
+        .bar{
+
+            background:#222;
+
+            width:100%;
+
+            padding:10px;
+
+            text-align:center;
+
+            font-size:18px;
+
+            border:4px solid #00ff00;
+
+            border-bottom:none;
+
+            box-sizing:border-box;
+
+            box-shadow:
+                0 0 20px #00ff00;
         }
 
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(3, 60px);
-            gap: 10px;
-            margin-top: 10px;
+        canvas{
+
+            background:#000;
+
+            border:4px solid #00ff00;
+
+            border-top:none;
+
+            box-shadow:
+                0 0 20px #00ff00;
+
+            max-width:90vw;
+
+            max-height:50vh;
+
+            display:block;
         }
 
-        button {
-            padding: 10px;
-            background: #333;
-            color: #0f0;
-            border: 1px solid #0f0;
+        #menu,
+        #gameOver{
+
+            position:absolute;
+
+            background:rgba(0,0,0,0.95);
+
+            padding:20px;
+
+            border:2px solid #00ff00;
+
+            z-index:10;
+
+            text-align:center;
+
+            width:260px;
+
+            display:none;
         }
+
+        #gameOver{
+
+            border:2px solid #ff0000;
+
+            z-index:15;
+        }
+
+        .controls{
+
+            display:none;
+
+            grid-template-columns:repeat(3,60px);
+
+            gap:10px;
+
+            margin-top:15px;
+        }
+
+        button{
+
+            padding:10px;
+
+            margin:5px;
+
+            cursor:pointer;
+
+            background:#333;
+
+            color:#00ff00;
+
+            border:1px solid #00ff00;
+        }
+
+        .selected{
+
+            background:#00ff00 !important;
+
+            color:#000 !important;
+
+            font-weight:bold;
+        }
+
+        #errorMsg{
+
+            color:#ff0033;
+
+            font-weight:bold;
+
+            display:none;
+
+            margin-top:10px;
+        }
+
+        .footer-text{
+
+            font-size:12px;
+
+            color:#fff;
+
+            margin-top:15px;
+
+            opacity:0.7;
+        }
+
+        #logo{
+
+            width:120px;
+
+            margin-bottom:10px;
+
+            filter:
+                drop-shadow(0 0 10px #00ff00);
+        }
+
     </style>
+
 </head>
 
-<body onclick="focusGame()">
+<body>
 
-<div class="bar">
-    Score: <span id="scoreVal">0</span>
-</div>
+    <div id="menu" style="display:block;">
 
-<canvas id="lienzo" width="400" height="400" tabindex="0"></canvas>
+        <img
+        src="icon.png"
+        id="logo">
 
-<div class="controls">
-    <div></div><button onclick="setDir('UP')">▲</button><div></div>
-    <button onclick="setDir('LEFT')">◀</button>
-    <button onclick="setDir('DOWN')">▼</button>
-    <button onclick="setDir('RIGHT')">▶</button>
-</div>
+        <h2>CONFIGURACIÓN</h2>
+
+        <p>Velocidad:</p>
+
+        <button id="spd200"
+        onclick="select('spd',200,this)">
+            Lenta
+        </button>
+
+        <button id="spd130"
+        onclick="select('spd',130,this)">
+            Normal
+        </button>
+
+        <button id="spd80"
+        onclick="select('spd',80,this)">
+            Rápida
+        </button>
+
+        <p>Controles:</p>
+
+        <button id="ctrlpc"
+        onclick="select('ctrl','pc',this)">
+            Teclado
+        </button>
+
+        <button id="ctrlmovil"
+        onclick="select('ctrl','movil',this)">
+            Táctil
+        </button>
+
+        <div id="errorMsg">
+            ¡Selecciona ambos!
+        </div>
+
+        <br>
+
+        <button onclick="initGame()"
+        style="width:100%;font-size:20px;">
+            INICIAR
+        </button>
+
+        <div class="footer-text">
+            Powered by KIDACK Software © 2026
+        </div>
+
+    </div>
+
+    <div id="gameOver">
+
+        <h2 style="color:#ff0000;">
+            GAME OVER
+        </h2>
+
+        <p id="finalScore"></p>
+
+        <button onclick="backToMenu()">
+            VOLVER AL MENU
+        </button>
+
+    </div>
+
+    <div id="gameContainer">
+
+        <div class="bar">
+
+            Score:
+            <span id="scoreVal">0</span>
+
+        </div>
+
+        <canvas
+        id="lienzo"
+        width="400"
+        height="400">
+        </canvas>
+
+    </div>
+
+    <div class="controls" id="tactiles">
+
+        <div></div>
+
+        <button onclick="setDir('UP')">
+            ▲
+        </button>
+
+        <div></div>
+
+        <button onclick="setDir('LEFT')">
+            ◀
+        </button>
+
+        <button onclick="setDir('DOWN')">
+            ▼
+        </button>
+
+        <button onclick="setDir('RIGHT')">
+            ▶
+        </button>
+
+    </div>
 
 <script>
-const canvas = document.getElementById("lienzo");
-const ctx = canvas.getContext("2d");
 
-let s = [{x:200,y:200}];
-let dir = "RIGHT";
-let food = randomPos();
-let score = 0;
+    let settings={
 
-function focusGame(){
-    canvas.focus();
-}
+        spd:localStorage.getItem('spd'),
 
-function setDir(d){
-    if(d=="LEFT" && dir!="RIGHT") dir="LEFT";
-    if(d=="RIGHT" && dir!="LEFT") dir="RIGHT";
-    if(d=="UP" && dir!="DOWN") dir="UP";
-    if(d=="DOWN" && dir!="UP") dir="DOWN";
-}
-
-document.addEventListener("keydown",(e)=>{
-    if(e.keyCode==37) setDir("LEFT");
-    if(e.keyCode==38) setDir("UP");
-    if(e.keyCode==39) setDir("RIGHT");
-    if(e.keyCode==40) setDir("DOWN");
-});
-
-function randomPos(){
-    return {
-        x: Math.floor(Math.random()*20)*20,
-        y: Math.floor(Math.random()*20)*20
+        ctrl:localStorage.getItem('ctrl')
     };
-}
 
-function loop(){
-    let head = {...s[0]};
+    if(settings.spd)
+        document.getElementById('spd'+settings.spd)
+        .classList.add('selected');
 
-    if(dir=="LEFT") head.x-=20;
-    if(dir=="RIGHT") head.x+=20;
-    if(dir=="UP") head.y-=20;
-    if(dir=="DOWN") head.y+=20;
+    if(settings.ctrl)
+        document.getElementById('ctrl'+settings.ctrl)
+        .classList.add('selected');
 
-    if(
-        head.x<0 || head.y<0 ||
-        head.x>=400 || head.y>=400 ||
-        s.some(p=>p.x==head.x && p.y==head.y)
-    ){
-        alert("GAME OVER");
-        location.reload();
+    function select(key,val,btn){
+
+        settings[key]=val;
+
+        localStorage.setItem(key,val);
+
+        btn.parentElement
+        .querySelectorAll('button')
+        .forEach(b=>{
+
+            if(b.id.startsWith(key))
+                b.classList.remove('selected');
+        });
+
+        btn.classList.add('selected');
     }
 
-    s.unshift(head);
+    function initGame(){
 
-    if(head.x==food.x && head.y==food.y){
-        score++;
-        document.getElementById("scoreVal").innerText = score;
-        food = randomPos();
-    } else {
-        s.pop();
+        if(!settings.spd || !settings.ctrl){
+
+            document.getElementById('errorMsg')
+            .style.display='block';
+
+            return;
+        }
+
+        document.getElementById('menu')
+        .style.display='none';
+
+        document.getElementById('gameContainer')
+        .style.display='flex';
+
+        if(settings.ctrl==='movil')
+            document.getElementById('tactiles')
+            .style.display='grid';
+
+        startGame();
     }
 
-    ctx.fillStyle="black";
-    ctx.fillRect(0,0,400,400);
+    function backToMenu(){
 
-    ctx.fillStyle="red";
-    ctx.fillRect(food.x,food.y,20,20);
+        document.getElementById('gameOver')
+        .style.display='none';
 
-    s.forEach((p,i)=>{
-        ctx.fillStyle = i==0 ? "#00ff00" : "#007700";
-        ctx.fillRect(p.x,p.y,20,20);
+        document.getElementById('menu')
+        .style.display='block';
+
+        document.getElementById('gameContainer')
+        .style.display='none';
+
+        document.getElementById('tactiles')
+        .style.display='none';
+    }
+
+    let currentDir="RIGHT";
+
+    let nextDir="RIGHT";
+
+    let s,c,score=0,game,running=false;
+
+    const canvas=document.getElementById("lienzo");
+
+    const ctx=canvas.getContext("2d");
+
+    let specialFood=null;
+
+    let specialTimer=0;
+
+    function setDir(newDir){
+
+        if(newDir=="LEFT" && currentDir!="RIGHT")
+            nextDir="LEFT";
+
+        else if(newDir=="UP" && currentDir!="DOWN")
+            nextDir="UP";
+
+        else if(newDir=="RIGHT" && currentDir!="LEFT")
+            nextDir="RIGHT";
+
+        else if(newDir=="DOWN" && currentDir!="UP")
+            nextDir="DOWN";
+    }
+
+    function randomPos(){
+
+        let pos;
+
+        do{
+
+            pos={
+
+                x:Math.floor(Math.random()*20)*20,
+
+                y:Math.floor(Math.random()*20)*20
+            };
+
+        }
+
+        while(
+
+            s.some(p=>
+                p.x===pos.x &&
+                p.y===pos.y
+            )
+
+            ||
+
+            (c &&
+             c.x===pos.x &&
+             c.y===pos.y)
+
+            ||
+
+            (specialFood &&
+             specialFood.x===pos.x &&
+             specialFood.y===pos.y)
+        );
+
+        return pos;
+    }
+
+    function startGame(){
+
+        if(game)
+            clearInterval(game);
+
+        s=[{x:200,y:200}];
+
+        currentDir="RIGHT";
+
+        nextDir="RIGHT";
+
+        score=0;
+
+        document.getElementById('scoreVal')
+        .innerText="0";
+
+        specialFood=null;
+
+        specialTimer=0;
+
+        c=randomPos();
+
+        running=true;
+
+        game=setInterval(
+            draw,
+            parseInt(settings.spd)
+        );
+    }
+
+    document.addEventListener("keydown",(e)=>{
+
+        if(settings.ctrl!=='pc')
+            return;
+
+        if(e.keyCode==37)
+            setDir("LEFT");
+
+        else if(e.keyCode==38)
+            setDir("UP");
+
+        else if(e.keyCode==39)
+            setDir("RIGHT");
+
+        else if(e.keyCode==40)
+            setDir("DOWN");
     });
+
+    function spawnSpecialFood(){
+
+        specialFood=randomPos();
+
+        specialTimer=5;
+
+        let countdown=setInterval(()=>{
+
+            if(!specialFood){
+
+                clearInterval(countdown);
+
+                return;
+            }
+
+            specialTimer--;
+
+            if(specialTimer<=0){
+
+                specialFood=null;
+
+                clearInterval(countdown);
+            }
+
+        },1000);
+    }
+
+    function draw(){
+
+        if(!running)
+            return;
+
+        currentDir=nextDir;
+
+        let h={
+            x:s[0].x,
+            y:s[0].y
+        };
+
+        if(currentDir=="LEFT") h.x-=20;
+        if(currentDir=="UP") h.y-=20;
+        if(currentDir=="RIGHT") h.x+=20;
+        if(currentDir=="DOWN") h.y+=20;
+
+        if(
+
+            h.x<0 ||
+
+            h.x>=400 ||
+
+            h.y<0 ||
+
+            h.y>=400 ||
+
+            s.some(p=>
+                p.x==h.x &&
+                p.y==h.y
+            )
+        ){
+
+            running=false;
+
+            clearInterval(game);
+
+            document.getElementById('finalScore')
+            .innerText="Score Final: "+score;
+
+            document.getElementById('gameOver')
+            .style.display='block';
+
+            return;
+        }
+
+        s.unshift(h);
+
+        if(h.x==c.x && h.y==c.y){
+
+            score++;
+
+            document.getElementById('scoreVal')
+            .innerText=score;
+
+            c=randomPos();
+
+            if(score%10===0 && !specialFood)
+                spawnSpecialFood();
+        }
+
+        else if(
+
+            specialFood &&
+
+            h.x==specialFood.x &&
+
+            h.y==specialFood.y
+        ){
+
+            score+=5;
+
+            document.getElementById('scoreVal')
+            .innerText=score;
+
+            specialFood=null;
+        }
+
+        else{
+
+            s.pop();
+        }
+
+        ctx.fillStyle="black";
+
+        ctx.fillRect(0,0,400,400);
+
+        ctx.fillStyle="red";
+
+        ctx.fillRect(c.x,c.y,20,20);
+
+        if(specialFood){
+
+            const colors=[
+
+                "#ff0000",
+                "#ff8800",
+                "#ffff00",
+                "#00ff00",
+                "#00ffff",
+                "#0000ff",
+                "#ff00ff"
+            ];
+
+            ctx.fillStyle=
+            colors[
+                Math.floor(Date.now()/100)
+                %colors.length
+            ];
+
+            ctx.fillRect(
+                specialFood.x,
+                specialFood.y,
+                20,
+                20
+            );
+
+            ctx.fillStyle="white";
+
+            ctx.font="12px Arial";
+
+            ctx.fillText(
+                specialTimer,
+                specialFood.x+6,
+                specialFood.y+14
+            );
+        }
+
+        s.forEach((p,i)=>{
+
+            ctx.shadowBlur=10;
+
+            ctx.shadowColor="#00ff00";
+
+            ctx.fillStyle=
+            (i==0)
+            ? "#004400"
+            : "#00ff00";
+
+            ctx.fillRect(
+                p.x,
+                p.y,
+                20,
+                20
+            );
+        });
+
+        ctx.shadowBlur=0;
+    }
+
+</script>
+
+<script>
+
+if('serviceWorker' in navigator){
+
+    navigator.serviceWorker.register('sw.js');
+
 }
-
-setInterval(loop,120);
-
-// FIX IMPORTANTE PARA WEBVIEWER
-window.onload = ()=>{
-    canvas.focus();
-};
 
 </script>
 
 </body>
+
 </html>
